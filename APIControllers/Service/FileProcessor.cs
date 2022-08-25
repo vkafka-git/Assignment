@@ -34,8 +34,9 @@ namespace APIControllers.Service
             string jsonData;
             
             string filePath = configuration.GetSection("MySettings").GetSection("JsonFilePath").Value;
-            using (FileStream fstr = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (FileStream fstr = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.Read, FileShare.None))
             {
+                
                 // Read existing json data
                 StreamReader sr = new StreamReader(fstr);
                 jsonData = sr.ReadToEnd();
@@ -56,7 +57,7 @@ namespace APIControllers.Service
             // Update json data string
             jsonData = JsonConvert.SerializeObject(personList, Formatting.Indented);
 
-            using (FileStream fstr = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (FileStream fstr = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
             {
                 StreamWriter sw = new StreamWriter(fstr);
                 sw.Write(jsonData);
