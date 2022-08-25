@@ -4,6 +4,8 @@ using System;
 using APIControllers.Models;
 //using System.Configuration;
 using Microsoft.Extensions.Configuration;
+using System.IO;
+
 namespace APIControllers.Service
 {
     
@@ -29,14 +31,21 @@ namespace APIControllers.Service
 
         public override Person AddReservation(Person person)
         {
-            //var filePath = @"Data/Persons.json";
+            string jsonData;
+            
             string filePath = configuration.GetSection("MySettings").GetSection("JsonFilePath").Value;
-            // Read existing json data
-            var jsonData = System.IO.File.ReadAllText(filePath);
+            using (FileStream fstr = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                // Read existing json data
+                StreamReader sr = new StreamReader(fstr);
+                jsonData = sr.ReadToEnd();
+                sr.Dispose();
+            }
+
+            
             // De-serialize to object or create new list
             var personList = JsonConvert.DeserializeObject<List<Person>>(jsonData)
                                   ?? new List<Person>();
-
             // Add any new employees
             personList.Add(new Person()
             {
@@ -46,7 +55,15 @@ namespace APIControllers.Service
 
             // Update json data string
             jsonData = JsonConvert.SerializeObject(personList, Formatting.Indented);
-            System.IO.File.WriteAllText(filePath, jsonData);
+
+            using (FileStream fstr = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                StreamWriter sw = new StreamWriter(fstr);
+                sw.Write(jsonData);
+                sw.Flush();
+                sw.Dispose();
+            }
+
             return person;
         }
     }
